@@ -92,9 +92,49 @@ class Product extends Model
         }
     }
 
-    public static function updateProduct(int $id, array $attributes): int
+    public static function updateProduct(int $id, array $data): bool
     {
-        return DB::table('products')->where('id', $id)->update($attributes);
+        try {
+            DB::beginTransaction();
+
+            DB::table('products')
+                ->where('id', $id)
+                ->update([
+                    'name' => $data['name'],
+                    'brand_id' => $data['brand_id'],
+                    'category_id' => $data['category_id'],
+                    'price' => $data['price'],
+                    'sale_date' => $data['sale_date'],
+                    'import_date' => $data['import_date'],
+                    'warranty_period' => $data['warranty_period'],
+                    'seating_capacity' => $data['seating_capacity'],
+                    'power' => $data['power'],
+                    'torque' => $data['torque'],
+                    'manufacturing_year' => $data['manufacturing_year'],
+                    'top_speed' => $data['top_speed'],
+                    'color' => $data['color'],
+                    'updated_at' => now(),
+                ]);
+
+            if (isset($data['paths']) && is_array($data['paths'])) {
+                DB::table('products_images')->where('product_id', $id)->delete();
+                $imagesData = array_map(function ($path) use ($id) {
+                    return [
+                        'product_id' => $id,
+                        'path' => $path,
+                        'created_at' => now(),
+                    ];
+                }, $data['paths']);
+
+                DB::table('products_images')->insert($imagesData);
+            }
+
+            DB::commit();
+            return true;
+        } catch (QueryException $e) {
+            DB::rollBack();
+            return false;
+        }
     }
 
     public static function deleteProduct(int $id): int

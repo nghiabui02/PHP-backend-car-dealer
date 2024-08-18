@@ -40,11 +40,27 @@ class ProductController extends Controller
         return response()->json(['message' => 'Product created successfully'], 201);
     }
 
-    public function update(Request $request, int $id): int
+    public function update(Request $request, int $id): JsonResponse
     {
-        $data = request()->all();
-        $validated = $request->validate([]);
-        return Product::updateProduct($id, $validated);
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'brand_id' => 'required|integer',
+            'category_id' => 'required|integer',
+            'price' => 'required|numeric',
+            'sale_date' => 'nullable|date',
+            'import_date' => 'required|date',
+            'warranty_period' => 'required|integer',
+            'seating_capacity' => 'required|integer',
+            'power' => 'required|numeric',
+            'torque' => 'required|numeric',
+            'manufacturing_year' => 'required|integer',
+            'top_speed' => 'required|numeric',
+            'color' => 'required|string|max:50',
+            'paths' => 'required|array',
+            'paths.*' => 'url',
+        ]);
+        Product::updateProduct($id, $validated);
+        return response()->json(['message' => 'Product updated successfully'], 200);
     }
 
     public function destroy(int $id): JsonResponse
