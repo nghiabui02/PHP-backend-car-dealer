@@ -9,13 +9,16 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Collection;
 use Illuminate\Database\QueryException;
 
-
 class Product extends Model
 {
     use HasFactory;
     public function images(): HasMany
     {
         return $this->hasMany(ProductImage::class);
+    }
+    public function customers(): HasMany
+    {
+        return $this->hasMany(Customer::class);
     }
 
     public static function getAllProduct(): Collection
