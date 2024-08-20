@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Validator;
 
 class ProductController extends Controller
 {
@@ -19,7 +20,7 @@ class ProductController extends Controller
 
     public function store(Request $request): JsonResponse
     {
-        $validated = $request->validate([
+        $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'brand_id' => 'required|integer',
             'category_id' => 'required|integer',
@@ -36,7 +37,11 @@ class ProductController extends Controller
             'paths' => 'required|array',
             'paths.*' => 'url',
         ]);
-        Product::createProduct($validated);
+
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 400);
+        }
+        Product::createProduct($validator);
         return response()->json(['message' => 'Product created successfully'], 201);
     }
 
