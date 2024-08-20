@@ -29,13 +29,13 @@ class Customer extends Model
         ]);
     }
 
-    public static function get_customers(): true|string
+    public static function get_customers(): string|\Illuminate\Support\Collection
     {
         try {
             DB::beginTransaction();
-            DB::table('customers')->get();
+            $customer = DB::table('customers')->get();
             DB::commit();
-            return true;
+            return $customer;
         }
         catch (\Exception $e) {
             DB::rollBack();
