@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\CategoryController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('register', [AuthController::class, 'register'])->name('register');
@@ -21,4 +22,9 @@ Route::middleware('auth:api')->group(function () {
     //Customer
     Route::get('customers', [CustomerController::class, 'getCustomers']);
     Route::delete('customers/{id}', [CustomerController::class, 'destroy']);
+    //Categories
+    Route::get('categories', [CategoryController::class, 'index']);
+    Route::post('categories', [CategoryController::class, 'store']);
+    Route::put('categories/{id}', [CategoryController::class, 'update']);
+    Route::delete('categories/{id}', [CategoryController::class, 'destroy']);
 });
