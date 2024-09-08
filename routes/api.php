@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BrandController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CategoryController;
@@ -27,4 +28,9 @@ Route::middleware('auth:api')->group(function () {
     Route::post('categories', [CategoryController::class, 'store']);
     Route::put('categories/{id}', [CategoryController::class, 'update']);
     Route::delete('categories/{id}', [CategoryController::class, 'destroy']);
+    //Brands
+    Route::get('brands', [BrandController::class, 'index']);
+    Route::post('brands', [BrandController::class, 'store']);
+    Route::put('brands/{id}', [BrandController::class, 'update']);
+    Route::delete('brands/{id}', [BrandController::class, 'destroy']);
 });
