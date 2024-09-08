@@ -9,9 +9,10 @@ use Illuminate\Support\Facades\Validator;
 
 class ProductController extends Controller
 {
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $products = Product::getAllProduct();
+        $dataSearch = request()->all();
+        $products = Product::getAllProduct($dataSearch);
         if ($products->isEmpty()) {
             return response()->json('No products found in store');
         }
@@ -20,7 +21,9 @@ class ProductController extends Controller
 
     public function store(Request $request): JsonResponse
     {
-        $validator = Validator::make($request->all(), [
+        $data = $request->all();
+
+        $validator = Validator::make($data, [
             'name' => 'required|string|max:255',
             'brand_id' => 'required|integer',
             'category_id' => 'required|integer',
@@ -41,7 +44,8 @@ class ProductController extends Controller
         if ($validator->fails()) {
             return response()->json($validator->errors(), 400);
         }
-        Product::createProduct($validator);
+        $data = $validator->validated();
+        Product::createProduct($data);
         return response()->json(['message' => 'Product created successfully'], 201);
     }
 

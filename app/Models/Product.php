@@ -20,11 +20,9 @@ class Product extends Model
     {
         return $this->hasMany(Customer::class);
     }
-
-    public static function getAllProduct(): Collection
+    public static function getAllProduct($dataSearch): Collection
     {
         $products = DB::table('products')
-            ->leftJoin('products_images', 'products.id', '=', 'products_images.product_id')
             ->select(
                 'products.id',
                 'products.name',
@@ -42,21 +40,45 @@ class Product extends Model
                 'products.color',
                 'products.created_at',
                 'products.updated_at',
-                'products_images.path'
+                'products_images.path',
+                'categories.name as category_name',
+                'brands.name as brand_name'
             )
-            ->get();
+            ->leftJoin('products_images', 'products.id', '=', 'products_images.product_id')
+            ->leftJoin('categories', 'products.category_id', '=', 'categories.id')
+            ->leftJoin('brands', 'products.brand_id', '=', 'brands.id');
+            if (!empty($dataSearch['name'])) {
+                $products->where('products.name', 'LIKE', '%' . $dataSearch['name'] . '%')
+                    ->orWhere('products.brand_id', 'LIKE', '%' . $dataSearch['brand'] . '%');
+            }
+            if (!empty($dataSearch['brand'])) {
+                $products->where('products.brand_id', 'LIKE', '%' . $dataSearch['brand'] . '%');
+            }
+            if (!empty($dataSearch['category'])) {
+                $products->where('products.category_id', 'LIKE', '%' . $dataSearch['category'] . '%');
+            }
+            if (!empty($dataSearch['min_price'])) {
+                $products->where('products.price', '>=', $dataSearch['min_price']);
+            }
+            if (!empty($dataSearch['max_price'])) {
+               $products->where('products.price', '<=', $dataSearch['max_price']);
+            }
+            if (!empty($dataSearch['color'])) {
+                $products->where('products.color', 'LIKE', '%' . $dataSearch['color'] . '%');
+            }
+            $products = $products->get();
 
-        $groupedProducts = $products->groupBy('id')->map(function ($productGroup) {
-            $product = $productGroup->first();
-            $product->paths = $productGroup->pluck('path')->filter()->all();
-            unset($product->path);
-            return $product;
-        });
+            $groupedProducts = $products->groupBy('id')->map(function ($productGroup) {
+                $product = $productGroup->first();
+                $product->paths = $productGroup->pluck('path')->filter()->all();
+                unset($product->path);
+                return $product;
+            });
 
         return $groupedProducts->values();
     }
 
-    public static function createProduct($data): bool
+        public static function createProduct($data): bool
     {
         try {
             DB::beginTransaction();

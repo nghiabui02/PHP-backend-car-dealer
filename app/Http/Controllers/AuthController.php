@@ -32,12 +32,13 @@ class AuthController extends Controller
 
         try {
             if (!$token = JWTAuth::attempt($credentials)) {
-                return response()->json(['error' => 'Unauthorized'], 401);
+                return response()->json(['error' => 'Login info or password was wrong'], 401);
             }
+            $user = auth()->user();
         } catch (JWTException $e) {
             return response()->json(['error' => 'Could not create token'], 500);
         }
-        return response()->json(['access_token' => $token, 'token_type' => 'Bearer']);
+        return response()->json(['user' => $user ,'access_token' => $token, 'token_type' => 'Bearer']);
     }
 
     public function register(Request $request): JsonResponse
@@ -54,7 +55,7 @@ class AuthController extends Controller
 
         return response()->json(['message' => 'User registered successfully', 'user' => $attributes], 201);
     }
-    public function logout(Request $request): JsonResponse
+    public function logout(): JsonResponse
     {
         auth()->logout();
         return response()->json(['message' => 'Successfully logged out']);
