@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'firebase' => [
+        'storage_url' => env('FIREBASE_STORAGE_URL'),
+    ],
+
 ];
