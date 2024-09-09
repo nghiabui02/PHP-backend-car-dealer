@@ -23,6 +23,7 @@ class Brand extends Model
             DB::beginTransaction();
             $newBrand = DB::table('brands')->insertGetId([
                 'name' => $data['name'],
+                'image' => $data['image'],
                 'created_at' => now(),
             ]);
             $brandCreated = DB::table('brands')->where('id', $newBrand)->first();
@@ -54,5 +55,9 @@ class Brand extends Model
     public static function deleteBrand($id): void
     {
         DB::table('brands')->where('id', $id)->delete();
+    }
+
+    public static function getBrandById($id){
+        return DB::table('brands')->where('id', $id)->first();
     }
 }

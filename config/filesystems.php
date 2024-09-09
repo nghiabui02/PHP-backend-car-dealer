@@ -56,6 +56,12 @@ return [
             'throw' => false,
         ],
 
+        'firebase' => [
+            'driver' => 'firebase',
+            'credentials' => base_path(env('FIREBASE_CREDENTIALS')),
+            'bucket' => env('FIREBASE_BUCKET'),
+        ],
+
     ],
 
     /*
