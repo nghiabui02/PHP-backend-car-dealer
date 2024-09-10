@@ -41,6 +41,7 @@ class Brand extends Model
             DB::beginTransaction();
             DB::table('brands')->where('id', $id)->update([
                 'name' => $data['name'],
+                'image' => $data['image'],
                 'updated_at' => now()
             ]);
             $dataUpdated = DB::table('brands')->where('id', $id)->first();

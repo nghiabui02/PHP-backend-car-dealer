@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Common\Common;
 use App\Models\Brand;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -17,7 +18,6 @@ class BrandController extends Controller
         $firebase = (new Factory)
             ->withServiceAccount(config('filesystems.disks.firebase.credentials'));
 
-        // Khởi tạo Firebase Storage
         $this->firebaseStorage = $firebase->createStorage();
     }
 
@@ -36,18 +36,18 @@ class BrandController extends Controller
         ]);
         $file = $request->file('image');
         $timestamp = Carbon::now()->toDateString();
-        $fileName = $timestamp . '_' . $file->getClientOriginalName();
-        $bucket = $this->firebaseStorage->getBucket();
-        $filePath = 'logo_images/' . $fileName;
-        $bucket->upload(file_get_contents($file), [
-            'name' => $filePath
-        ]);
-        $getImage = $bucket->object($filePath);
-        $getImage->update(['acl' => []], ['predefinedAcl' => 'PUBLICREAD']);
-        $imageUrl = config('services.firebase.storage_url') . $bucket->name() . '/' . $filePath;
+        $imageUrl = '';
+
+        if (file_exists($file)) {
+            $fileName = $timestamp . '_' . $file->getClientOriginalName();
+            $bucket = $this->firebaseStorage->getBucket();
+            $imageUrl = Common::getBrandImageUrl($fileName, $bucket, $file);
+        }
+
         if ($validatedData->fails()) {
             return response()->json($validatedData->errors());
         }
+
         $brandData = $validatedData->validated();
         $brandData['image'] = $imageUrl;
         $brand = Brand::createBrand($brandData);
@@ -57,11 +57,17 @@ class BrandController extends Controller
     public function update(Request $request, int $id): JsonResponse
     {
         $data = $request->all();
+        $imageUrl = '';
+        $timestamp = Carbon::now()->toDateString();
+        $oldBrand = Brand::getBrandById($id);
+        $file = $request->file('image');
         $rules = [
-            'name' => 'required|unique:brands|max:15',
+            'name' => 'unique:brands,name,' . $id . '|max:15',
         ];
-        if ($request->hasFile('image')) {
+        if (file_exists($file)) {
             $rules['image'] = 'image|mimes:jpeg,png,jpg|max:2048';
+        } else {
+            $rules['name'] = 'required|unique:brands,name,' . $id . '|max:15';
         }
 
         $validatedData = Validator::make($data, $rules);
@@ -69,11 +75,24 @@ class BrandController extends Controller
         if ($validatedData->fails()) {
             return response()->json($validatedData->errors());
         }
-        $brandData = $validatedData->validated();
-        $oldBrand = Brand::getBrandById($id);
+
         if (!$oldBrand) {
             return response()->json(['message' => 'Brand not found.'], 404);
         }
+
+        if (file_exists($file)) {
+            $firebase = (new Factory)
+                ->withServiceAccount(config('filesystems.disks.firebase.credentials'))
+                ->createStorage();
+            $bucket = $firebase->getBucket();
+            $file = $request->file('image');
+            $fileName = $timestamp . '_' . $file->getClientOriginalName();
+            $imageUrl = Common::getBrandImageUrl($fileName, $bucket, $file);
+        }
+
+        $brandData = $validatedData->validated();
+        $brandData['image'] = $imageUrl;
+
         $brand = Brand::updateBrand($id, $brandData);
         return response()->json(['message' => 'Brand updated successfully.', 'data' => $brand], 201);
     }
