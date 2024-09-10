@@ -52,19 +52,20 @@ class Product extends Model
                     ->orWhere('products.brand_id', 'LIKE', '%' . $dataSearch['brand'] . '%');
             }
             if (!empty($dataSearch['brand'])) {
-                $products->where('products.brand_id', 'LIKE', '%' . $dataSearch['brand'] . '%');
+                $brands = is_array($dataSearch['brand']) ? $dataSearch['brands'] : explode(',', $dataSearch['brand']);
+                $products->whereIn('products.brand_id', $brands);
             }
             if (!empty($dataSearch['category'])) {
-                $products->where('products.category_id', 'LIKE', '%' . $dataSearch['category'] . '%');
+                $categories = is_array($dataSearch['category']) ? $dataSearch['category'] : explode(',', $dataSearch['category']);
+                $products->whereIn('products.category_id', $categories);
             }
-            if (!empty($dataSearch['min_price'])) {
-                $products->where('products.price', '>=', $dataSearch['min_price']);
-            }
-            if (!empty($dataSearch['max_price'])) {
-               $products->where('products.price', '<=', $dataSearch['max_price']);
+            if (!empty($dataSearch['min_price']) && !empty($dataSearch['max_price'])) {
+                $products->whereBetween('products.price', [$dataSearch['min_price'], $dataSearch['max_price']]);
             }
             if (!empty($dataSearch['color'])) {
-                $products->where('products.color', 'LIKE', '%' . $dataSearch['color'] . '%');
+                $colors = is_array($dataSearch['color']) ? $dataSearch['color'] : explode(',', $dataSearch['color']);
+                $colors = array_filter(array_map('trim', $colors));
+                $products->whereIn('products.color', $colors);
             }
             $products = $products->get();
 
