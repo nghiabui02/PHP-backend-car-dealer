@@ -79,7 +79,7 @@ class Product extends Model
         return $groupedProducts->values();
     }
 
-        public static function createProduct($data): bool
+    public static function createProduct($data)
     {
         try {
             DB::beginTransaction();
@@ -87,38 +87,60 @@ class Product extends Model
                 'name' => $data['name'],
                 'brand_id' => $data['brand_id'],
                 'category_id' => $data['category_id'],
+                'color' => $data['color'],
                 'price' => $data['price'],
-                'sale_date' => $data['sale_date'],
+                'torque' => $data['torque'],
+                'power' => $data['power'],
+                'seating_capacity' => $data['seating_capacity'],
+                'top_speed' => $data['top_speed'],
                 'import_date' => $data['import_date'],
                 'warranty_period' => $data['warranty_period'],
-                'seating_capacity' => $data['seating_capacity'],
-                'power' => $data['power'],
-                'torque' => $data['torque'],
+                'sale_date' => $data['sale_date'],
                 'manufacturing_year' => $data['manufacturing_year'],
-                'top_speed' => $data['top_speed'],
-                'color' => $data['color'],
+                'sold_status' => $data['sold_status'],
+                'acceleration' => $data['acceleration'],
+                'torque_rpm' => $data['torque_rpm'],
+                'length' => $data['length'],
+                'wheelbase' => $data['wheelbase'],
+                'ground_clearance' => $data['ground_clearance'],
+                'trunk_capacity' => $data['trunk_capacity'],
+                'fuel_tank_capacity' => $data['fuel_tank_capacity'],
+                'fuel_consumption_city' => $data['fuel_consumption_city'],
+                'fuel_consumption_highway' => $data['fuel_consumption_highway'],
+                'fuel_consumption_combined' => $data['fuel_consumption_combined'],
+                'wheel_size' => $data['wheel_size'],
+                'description' => $data['description'],
                 'created_at' => now(),
             ]);
 
-            if (isset($data['paths']) && is_array($data['paths'])) {
+            if (isset($data['images']) && is_array($data['images'])) {
                 $imagesData = array_map(function ($path) use ($productId) {
                     return [
                         'product_id' => $productId,
                         'path' => $path,
                         'created_at' => now(),
                     ];
-                }, $data['paths']);
+                }, $data['images']);
                 DB::table('products_images')->insert($imagesData);
             }
+
+            $productCreated = DB::table('products')->where('id', $productId)->first();
+
+            $images = DB::table('products_images')
+                ->where('product_id', $productId)
+                ->pluck('path');
+
+            $productCreated->images = $images;
             DB::commit();
-            return true;
+            return $productCreated;
         } catch (QueryException $e) {
+            \Log::error($e->getMessage());
             DB::rollBack();
             return false;
         }
     }
 
-    public static function updateProduct(int $id, array $data): bool
+    public static function updateProduct(int $id, array $data)
     {
         try {
             DB::beginTransaction();
@@ -129,34 +151,55 @@ class Product extends Model
                     'name' => $data['name'],
                     'brand_id' => $data['brand_id'],
                     'category_id' => $data['category_id'],
+                    'color' => $data['color'],
                     'price' => $data['price'],
-                    'sale_date' => $data['sale_date'],
+                    'torque' => $data['torque'],
+                    'power' => $data['power'],
+                    'seating_capacity' => $data['seating_capacity'],
+                    'top_speed' => $data['top_speed'],
                     'import_date' => $data['import_date'],
                     'warranty_period' => $data['warranty_period'],
-                    'seating_capacity' => $data['seating_capacity'],
-                    'power' => $data['power'],
-                    'torque' => $data['torque'],
+                    'sale_date' => $data['sale_date'],
                     'manufacturing_year' => $data['manufacturing_year'],
-                    'top_speed' => $data['top_speed'],
-                    'color' => $data['color'],
+                    'sold_status' => $data['sold_status'],
+                    'acceleration' => $data['acceleration'],
+                    'torque_rpm' => $data['torque_rpm'],
+                    'length' => $data['length'],
+                    'wheelbase' => $data['wheelbase'],
+                    'ground_clearance' => $data['ground_clearance'],
+                    'trunk_capacity' => $data['trunk_capacity'],
+                    'fuel_tank_capacity' => $data['fuel_tank_capacity'],
+                    'fuel_consumption_city' => $data['fuel_consumption_city'],
+                    'fuel_consumption_highway' => $data['fuel_consumption_highway'],
+                    'fuel_consumption_combined' => $data['fuel_consumption_combined'],
+                    'wheel_size' => $data['wheel_size'],
+                    'description' => $data['description'],
                     'updated_at' => now(),
                 ]);
 
-            if (isset($data['paths']) && is_array($data['paths'])) {
+            if (isset($data['images']) && is_array($data['images'])) {
                 DB::table('products_images')->where('product_id', $id)->delete();
                 $imagesData = array_map(function ($path) use ($id) {
                     return [
                         'product_id' => $id,
                         'path' => $path,
-                        'created_at' => now(),
+                        'updated_at' => now(),
                     ];
-                }, $data['paths']);
+                }, $data['images']);
 
                 DB::table('products_images')->insert($imagesData);
             }
 
+            $productUpdated = DB::table('products')->where('id', $id)->first();
+
+            $images = DB::table('products_images')
+                ->where('product_id', $id)
+                ->pluck('path');
+
+            $productUpdated->images = $images;
+
             DB::commit();
-            return true;
+            return $productUpdated;
         } catch (QueryException $e) {
             DB::rollBack();
             return false;

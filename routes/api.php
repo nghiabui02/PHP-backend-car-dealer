@@ -18,7 +18,7 @@ Route::middleware('auth:api')->group(function () {
     //Product api
     Route::get('products', [ProductController::class, 'index'])->name('get_products_for_admin');
     Route::post('products', [ProductController::class, 'store']);
-    Route::put('update_products/{id}', [ProductController::class, 'update']);
+    Route::post('products/{id}', [ProductController::class, 'update']);
     Route::delete('products/{id}', [ProductController::class, 'destroy']);
     //Customer
     Route::get('customers', [CustomerController::class, 'getCustomers']);
