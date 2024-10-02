@@ -12,6 +12,8 @@ use Illuminate\Database\QueryException;
 class Product extends Model
 {
     use HasFactory;
+
+    protected $table = 'products';
     public function images(): HasMany
     {
         return $this->hasMany(ProductImage::class);
@@ -22,24 +24,8 @@ class Product extends Model
     }
     public static function getAllProduct($dataSearch): Collection
     {
-        $products = DB::table('products')
-            ->select(
-                'products.id',
-                'products.name',
-                'products.brand_id',
-                'products.category_id',
-                'products.price',
-                'products.sale_date',
-                'products.import_date',
-                'products.warranty_period',
-                'products.seating_capacity',
-                'products.power',
-                'products.torque',
-                'products.manufacturing_year',
-                'products.top_speed',
-                'products.color',
-                'products.created_at',
-                'products.updated_at',
+        $products = self::select(
+                'products.*',
                 'products_images.path',
                 'categories.name as category_name',
                 'brands.name as brand_name'
@@ -218,5 +204,29 @@ class Product extends Model
         } catch (\Exception $e) {
             DB::rollBack();
             return 0;
-        }    }
+        }
+    }
+
+    public static function findProductById(int $id)
+    {
+        $product = self::select('products.*',
+            'products_images.path',
+            'categories.name as category_name',
+            'brands.name as brand_name'
+        )
+            ->leftJoin('products_images', 'products.id', '=', 'products_images.product_id')
+            ->leftJoin('categories', 'products.category_id', '=', 'categories.id')
+            ->leftJoin('brands', 'products.brand_id', '=', 'brands.id')
+            ->where('products.id', $id);
+        $product = $product->get();
+
+        $groupedProducts = $product->groupBy('id')->map(function ($productGroup) {
+            $product = $productGroup->first();
+            $product->paths = $productGroup->pluck('path')->filter()->all();
+            unset($product->path);
+            return $product;
+        });
+
+        return $groupedProducts->values();
+    }
 }

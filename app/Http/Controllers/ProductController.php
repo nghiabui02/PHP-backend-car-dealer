@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Common\Common;
 use App\Common\Firebase;
 use App\Models\Product;
+use App\Models\ProductLog;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -87,6 +88,10 @@ class ProductController extends Controller
             }
         }
 
+        if (!empty($dataSend['created_at'])) {
+            $dataSend['created_at'] = now();
+        }
+
         $dataSend['images'] = $images;
         $new_product = Product::createProduct($dataSend);
         if ($new_product) {
@@ -98,6 +103,10 @@ class ProductController extends Controller
     public function update(Request $request, int $id): JsonResponse
     {
         $dataUpdate = $request->all();
+        $old_product = Product::find($id);
+        if (empty($old_product)) {
+            return response()->json(['message' => 'Old product not found with id: ' . $id], 404);
+        }
 
         $validator = Validator::make($dataUpdate, [
             'name' => 'required|string|max:15',
@@ -135,6 +144,7 @@ class ProductController extends Controller
             return response()->json($validator->errors(), 400);
         }
 
+
         $dataUpdate = $validator->validated();
         $images = [];
 
@@ -153,8 +163,22 @@ class ProductController extends Controller
 
         $dataUpdate['images'] = $images;
 
+        $changes = array_diff_assoc($dataUpdate, (array) $old_product);
+
+        if (!empty($changes)) {
+            ProductLog::save_log($id, $changes);
+        }
+
         $productUpdated = Product::updateProduct($id, $dataUpdate);
+
         return response()->json(['message' => 'Product updated successfully', 'data' => $productUpdated]);
+    }
+
+
+    public function getProductById(int $id): JsonResponse
+    {
+        $product = Product::findProductById($id);
+        return response()->json($product);
     }
 
     public function destroy(int $id): JsonResponse

@@ -6,6 +6,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CategoryController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ProductLogController;
 
 Route::post('register', [AuthController::class, 'register'])->name('register');
 Route::post('login', [AuthController::class, 'login'])->name('login');
@@ -19,6 +20,7 @@ Route::middleware('auth:api')->group(function () {
     Route::get('products', [ProductController::class, 'index'])->name('get_products_for_admin');
     Route::post('products', [ProductController::class, 'store']);
     Route::post('products/{id}', [ProductController::class, 'update']);
+    Route::get('products/{id}', [ProductController::class, 'getProductById']);
     Route::delete('products/{id}', [ProductController::class, 'destroy']);
     //Customer
     Route::get('customers', [CustomerController::class, 'getCustomers']);
@@ -33,4 +35,6 @@ Route::middleware('auth:api')->group(function () {
     Route::post('brands', [BrandController::class, 'store']);
     Route::post('brands/{id}', [BrandController::class, 'update']);
     Route::delete('brands/{id}', [BrandController::class, 'destroy']);
+    //ProductLogs
+    Route::get('product_logs', [ProductLogController::class, 'getAllProductLogs']);
 });
