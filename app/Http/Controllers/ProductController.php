@@ -103,7 +103,7 @@ class ProductController extends Controller
     public function update(Request $request, int $id): JsonResponse
     {
         $dataUpdate = $request->all();
-        $old_product = Product::find($id);
+        $old_product = Product::findProductById($id);
         if (empty($old_product)) {
             return response()->json(['message' => 'Old product not found with id: ' . $id], 404);
         }
@@ -162,9 +162,20 @@ class ProductController extends Controller
         }
 
         $dataUpdate['images'] = $images;
+        $old_product = (array) $old_product;
+        $changes = [];
+        foreach ($dataUpdate as $item => $newValue) {
+            if ($item === 'images') {
+                continue;
+            }
 
-        $changes = array_diff_assoc($dataUpdate, (array) $old_product);
-
+            if (array_key_exists($item, $old_product) && $old_product[$item] != $newValue) {
+                $changes[$item] = [
+                    'old_value' => $old_product[$item],
+                    'new_value' => $newValue,
+                ];
+            }
+        }
         if (!empty($changes)) {
             ProductLog::save_log($id, $changes);
         }
