@@ -217,16 +217,14 @@ class Product extends Model
             ->leftJoin('products_images', 'products.id', '=', 'products_images.product_id')
             ->leftJoin('categories', 'products.category_id', '=', 'categories.id')
             ->leftJoin('brands', 'products.brand_id', '=', 'brands.id')
-            ->where('products.id', $id);
-        $product = $product->get();
-
+            ->where('products.id', $id)
+            ->get();
         $groupedProducts = $product->groupBy('id')->map(function ($productGroup) {
             $product = $productGroup->first();
             $product->paths = $productGroup->pluck('path')->filter()->all();
             unset($product->path);
             return $product;
         });
-
-        return $groupedProducts->values();
+        return $groupedProducts->first()->toArray();
     }
 }

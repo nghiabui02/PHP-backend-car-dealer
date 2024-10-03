@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\QueryException;
@@ -22,7 +23,7 @@ class ProductLog extends Model
                     'product_id' => $id,
                     'changes' => json_encode($data),
                     'updated_by' => auth()->user()->id ?? 'system',
-                    'created_at' => now(),
+                    'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
                 ]);
             DB::commit();
             return true;
