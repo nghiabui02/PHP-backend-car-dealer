@@ -8,6 +8,7 @@ use App\Models\SaleProduct;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 
 
 class SaleProductController extends Controller
@@ -23,6 +24,9 @@ class SaleProductController extends Controller
         return response()->json(['data' => $productsSold]);
     }
 
+    /**
+     * @throws ValidationException
+     */
     public function SaleProduct(Request $request): JsonResponse
     {
         $data = $request->all();
@@ -53,7 +57,7 @@ class SaleProductController extends Controller
             'first_name' => $dataSend['first_name'],
             'last_name' => $dataSend['last_name'],
             'phone_number' => $dataSend['phone_number'],
-            'product_id' => $getProductSale['id'],
+            'product_id' => null,
         ];
         unset($dataSend['email'], $dataSend['first_name'], $dataSend['last_name'], $dataSend['phone_number']);
         $customerInfo = Customer::find_customer($customerData);
@@ -61,19 +65,23 @@ class SaleProductController extends Controller
             $createCustomer = Customer::createCustomer($customerData);
             $dataSend['customer_id'] = $createCustomer['id'];
         } else {
-            $customerInfo['product_id'] = $customerData['product_id'];
+            $customerInfo['product_id'] = null;
             Customer::update_customer($customerInfo);
             $dataSend['customer_id'] = $customerInfo['id'];
         }
         $sale_price = $getProductSale['price'] - $getProductSale['import_price'];
         $dataSend['sale_price'] = $sale_price;
-
-
-
-
         $transaction = SaleProduct::saleProduct($dataSend);
         return response()->json(['message' => 'Ok', 'data' => $transaction]);
     }
 
-
+    public function getAllTransactionSold(Request $request): JsonResponse
+    {
+        $dataSearch = $request->all();
+        $transactionList = SaleProduct::transactionList($dataSearch);
+        if (count($transactionList) == 0) {
+            return response()->json(['message' => 'No data']);
+        }
+        return response()->json($transactionList);
+    }
 }
