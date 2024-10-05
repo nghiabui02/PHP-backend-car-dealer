@@ -8,6 +8,7 @@ use App\Http\Controllers\CategoryController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProductLogController;
 use App\Http\Controllers\SaleProductController;
+use App\Http\Controllers\RevenueController;
 
 Route::post('register', [AuthController::class, 'register'])->name('register');
 Route::post('login', [AuthController::class, 'login'])->name('login');
@@ -42,4 +43,7 @@ Route::middleware('auth:api')->group(function () {
     Route::get('products_sold', [SaleProductController::class, 'getAllProductSold']);
     Route::post('sale_product', [SaleProductController::class, 'SaleProduct']);
     Route::get('get_transaction', [SaleProductController::class, 'getAllTransactionSold']);
+    //Revenues
+    Route::get('revenues', [RevenueController::class, 'getTotalRevenue']);
+
 });

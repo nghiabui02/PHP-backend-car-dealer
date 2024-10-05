@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Customer;
 use App\Models\Product;
-use App\Models\PurchaseHistory;
 use App\Models\SaleProduct;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;

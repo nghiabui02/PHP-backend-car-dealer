@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\QueryException;
@@ -64,5 +65,22 @@ class SaleProduct extends Model
             $transactions = $transactions->where('customers.email', 'LIKE', '%' . $dataSearch['email'] . '%');
         }
         return $transactions->get();
+    }
+
+    public static function calculateRevenue(string $type = null, string $date = null, string $startDate = null, string $endDate = null)
+    {
+        $query = DB::table('transactions')
+            ->select(DB::raw('SUM(sale_price) as total_revenue'));
+
+        match ($type) {
+            'month' => $query->whereMonth('sale_date', '=', $date ?? now()->month),
+            'quarter' => $query->whereRaw('QUARTER(sale_date) = ?', $date ?? ceil(now()->month / 3)),
+            'year' => $query->whereYear('sale_date', '=', $date ?? now()->year),
+            'range' => $query->whereBetween('sale_date', [$startDate, $endDate]),
+            null, 'all_time' => null,
+            default => throw new \InvalidArgumentException("Invalid type: $type"),
+        };
+
+        return $query->value('total_revenue') ?? 0;
     }
 }
