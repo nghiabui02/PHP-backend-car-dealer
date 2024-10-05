@@ -7,6 +7,7 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CategoryController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProductLogController;
+use App\Http\Controllers\SaleProductController;
 
 Route::post('register', [AuthController::class, 'register'])->name('register');
 Route::post('login', [AuthController::class, 'login'])->name('login');
@@ -37,4 +38,7 @@ Route::middleware('auth:api')->group(function () {
     Route::delete('brands/{id}', [BrandController::class, 'destroy']);
     //ProductLogs
     Route::get('product_logs', [ProductLogController::class, 'getAllProductLogs']);
+    //Product profit
+    Route::get('products_sold', [SaleProductController::class, 'getAllProductSold']);
+    Route::post('sale_product', [SaleProductController::class, 'SaleProduct']);
 });

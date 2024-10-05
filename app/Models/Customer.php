@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
@@ -10,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Customer extends Model
 {
     use HasFactory;
+    protected $table = 'customers';
 
     public function product(): BelongsTo
     {
@@ -17,9 +19,9 @@ class Customer extends Model
     }
 
 
-    public static function createCustomer(array $data): bool
+    public static function createCustomer(array $data)
     {
-        return DB::table('customers')->insert([
+        $customer = DB::table('customers')->insertGetId([
             'first_name' => $data['first_name'],
             'last_name' => $data['last_name'],
             'email' => $data['email'],
@@ -27,6 +29,7 @@ class Customer extends Model
             'product_id' => $data['product_id'],
             'created_at' => now(),
         ]);
+        return self::select('*')->where('id', $customer)->first();
     }
 
     public static function get_customers(): string|\Illuminate\Support\Collection
@@ -54,6 +57,43 @@ class Customer extends Model
         }
         catch (\Exception $e) {
             DB::rollBack();
+            return $e->getMessage();
+        }
+    }
+
+    public static function find_customer($data)
+    {
+        $customer_info = self::select('*');
+
+        if (isset($data['phone_number'])) {
+            $result = $customer_info->where('phone_number', $data['phone_number'])->first();
+            if ($result) {
+                return $result->toArray();
+            }
+        }
+        if (isset($data['email'])) {
+            $result = $customer_info->where('email', $data['email'])->first();
+            if ($result) {
+                return $result->toArray();
+            }
+        }
+        return null;
+    }
+
+    public static function update_customer($data): true|string
+    {
+        try {
+            DB::beginTransaction();
+            $data['updated_at'] = now();
+            $data['created_at'] = Carbon::parse($data['created_at'])->format('Y-m-d H:i:s');
+
+            DB::table('customers')->where('id', $data['id'])->update($data);
+            DB::commit();
+            return true;
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error($e->getMessage());
             return $e->getMessage();
         }
     }

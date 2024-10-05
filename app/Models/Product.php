@@ -49,6 +49,9 @@ class Product extends Model
             if (!empty($dataSearch['min_price']) && !empty($dataSearch['max_price'])) {
                 $products->whereBetween('products.price', [$dataSearch['min_price'], $dataSearch['max_price']]);
             }
+            if (isset($dataSearch['sold_status'])) {
+                $products->where('products.sold_status', $dataSearch['sold_status']);
+            }
             if (!empty($dataSearch['color'])) {
                 $colors = is_array($dataSearch['color']) ? $dataSearch['color'] : explode(',', $dataSearch['color']);
                 $colors = array_filter(array_map('trim', $colors));
