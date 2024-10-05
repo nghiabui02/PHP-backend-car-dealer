@@ -30,4 +30,39 @@ class SaleProduct extends Model
             return false;
         }
     }
+
+    public static function transactionList($dataSearch): \Illuminate\Support\Collection
+    {
+        $transactions = DB::table('transactions')->select(
+            'transactions.*',
+            'products.id as product_id',
+            'products.name as product_name',
+            'products.brand_id',
+            'brands.name as brand_name',
+            'customers.phone_number',
+            'customers.first_name',
+            'customers.last_name',
+            'customers.email',
+        )
+            ->leftJoin('products', 'transactions.product_id', '=', 'products.id')
+            ->leftJoin('brands', 'products.brand_id', '=', 'brands.id')
+            ->leftJoin('customers', 'transactions.customer_id', '=', 'customers.id');
+
+        if (!empty($dataSearch['phone_number_customer'])) {
+            $transactions = $transactions->where('customers.phone_number', 'LIKE', '%' . $dataSearch['phone_number_customer'] . '%');
+        }
+        if (!empty($dataSearch['product_name'])) {
+            $transactions = $transactions->where('products.name', 'LIKE', '%' . $dataSearch['product_name'] . '%');
+        }
+        if (!empty($dataSearch['brand_id'])) {
+            $transactions = $transactions->where('products.brand_id', 'LIKE', '%' . $dataSearch['brand_id'] . '%');
+        }
+        if (!empty($dataSearch['category_id'])) {
+            $transactions = $transactions->where('products.category_id', 'LIKE', '%' . $dataSearch['category_id'] . '%');
+        }
+        if (!empty($dataSearch['email'])) {
+            $transactions = $transactions->where('customers.email', 'LIKE', '%' . $dataSearch['email'] . '%');
+        }
+        return $transactions->get();
+    }
 }

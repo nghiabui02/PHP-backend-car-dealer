@@ -41,4 +41,5 @@ Route::middleware('auth:api')->group(function () {
     //Product profit
     Route::get('products_sold', [SaleProductController::class, 'getAllProductSold']);
     Route::post('sale_product', [SaleProductController::class, 'SaleProduct']);
+    Route::get('get_transaction', [SaleProductController::class, 'getAllTransactionSold']);
 });
