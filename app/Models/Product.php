@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Collection;
 use Illuminate\Database\QueryException;
@@ -48,6 +49,9 @@ class Product extends Model
             if (!empty($dataSearch['min_price']) && !empty($dataSearch['max_price'])) {
                 $products->whereBetween('products.price', [$dataSearch['min_price'], $dataSearch['max_price']]);
             }
+            if (isset($dataSearch['sold_status'])) {
+                $products->where('products.sold_status', $dataSearch['sold_status']);
+            }
             if (!empty($dataSearch['color'])) {
                 $colors = is_array($dataSearch['color']) ? $dataSearch['color'] : explode(',', $dataSearch['color']);
                 $colors = array_filter(array_map('trim', $colors));
@@ -65,39 +69,14 @@ class Product extends Model
         return $groupedProducts->values();
     }
 
-    public static function createProduct($data)
+    public static function createProduct(array $data)
     {
         try {
             DB::beginTransaction();
-            $productId = DB::table('products')->insertGetId([
-                'name' => $data['name'],
-                'brand_id' => $data['brand_id'],
-                'category_id' => $data['category_id'],
-                'color' => $data['color'],
-                'price' => $data['price'],
-                'torque' => $data['torque'],
-                'power' => $data['power'],
-                'seating_capacity' => $data['seating_capacity'],
-                'top_speed' => $data['top_speed'],
-                'import_date' => $data['import_date'],
-                'warranty_period' => $data['warranty_period'],
-                'sale_date' => $data['sale_date'],
-                'manufacturing_year' => $data['manufacturing_year'],
-                'sold_status' => $data['sold_status'],
-                'acceleration' => $data['acceleration'],
-                'torque_rpm' => $data['torque_rpm'],
-                'length' => $data['length'],
-                'wheelbase' => $data['wheelbase'],
-                'ground_clearance' => $data['ground_clearance'],
-                'trunk_capacity' => $data['trunk_capacity'],
-                'fuel_tank_capacity' => $data['fuel_tank_capacity'],
-                'fuel_consumption_city' => $data['fuel_consumption_city'],
-                'fuel_consumption_highway' => $data['fuel_consumption_highway'],
-                'fuel_consumption_combined' => $data['fuel_consumption_combined'],
-                'wheel_size' => $data['wheel_size'],
-                'description' => $data['description'],
-                'created_at' => now(),
-            ]);
+            $productData = Arr::except($data, ['images']);
+            $productData['sold_status'] = 0;
+            $productData['created_at'] = now();
+            $productId = DB::table('products')->insertGetId($productData);
 
             if (isset($data['images']) && is_array($data['images'])) {
                 $imagesData = array_map(function ($path) use ($productId) {
@@ -130,38 +109,10 @@ class Product extends Model
     {
         try {
             DB::beginTransaction();
+            $productData = Arr::except($data, ['images']);
+            $productData['updated_at'] = now();
 
-            DB::table('products')
-                ->where('id', $id)
-                ->update([
-                    'name' => $data['name'],
-                    'brand_id' => $data['brand_id'],
-                    'category_id' => $data['category_id'],
-                    'color' => $data['color'],
-                    'price' => $data['price'],
-                    'torque' => $data['torque'],
-                    'power' => $data['power'],
-                    'seating_capacity' => $data['seating_capacity'],
-                    'top_speed' => $data['top_speed'],
-                    'import_date' => $data['import_date'],
-                    'warranty_period' => $data['warranty_period'],
-                    'sale_date' => $data['sale_date'],
-                    'manufacturing_year' => $data['manufacturing_year'],
-                    'sold_status' => $data['sold_status'],
-                    'acceleration' => $data['acceleration'],
-                    'torque_rpm' => $data['torque_rpm'],
-                    'length' => $data['length'],
-                    'wheelbase' => $data['wheelbase'],
-                    'ground_clearance' => $data['ground_clearance'],
-                    'trunk_capacity' => $data['trunk_capacity'],
-                    'fuel_tank_capacity' => $data['fuel_tank_capacity'],
-                    'fuel_consumption_city' => $data['fuel_consumption_city'],
-                    'fuel_consumption_highway' => $data['fuel_consumption_highway'],
-                    'fuel_consumption_combined' => $data['fuel_consumption_combined'],
-                    'wheel_size' => $data['wheel_size'],
-                    'description' => $data['description'],
-                    'updated_at' => now(),
-                ]);
+            DB::table('products')->where('id', $id)->update($productData);
 
             if (isset($data['images']) && is_array($data['images'])) {
                 DB::table('products_images')->where('product_id', $id)->delete();
