@@ -62,6 +62,11 @@ class User extends Authenticatable implements JWTSubject
         ]);
     }
 
+    public function employees(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Employee::class);
+    }
+
     public function getJWTIdentifier()
     {
         return $this->getKey();
