@@ -10,7 +10,6 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use Kreait\Firebase\Factory;
@@ -96,7 +95,7 @@ class EmployeeController extends Controller
         if ($dataSend['position'] == 0 || $dataSend['position'] == 1) {
             $departmentName = Department::find($dataSend['department_id'])->name;
             $dataSend['name'] = $dataSend['first_name'] . ' ' . $dataSend['last_name'];
-            $dataSend['password'] = Hash::make(123456);
+            $dataSend['password'] = 123456;
             $usernameBase = strtolower($dataSend['first_name'] . '_' . $departmentName);
             $username = $usernameBase;
             $counter = 1;
