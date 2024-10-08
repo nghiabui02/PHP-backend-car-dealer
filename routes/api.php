@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BrandController;
+use App\Http\Controllers\DepartmentController;
+use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CategoryController;
@@ -45,5 +47,15 @@ Route::middleware('auth:api')->group(function () {
     Route::get('get_transaction', [SaleProductController::class, 'getAllTransactionSold']);
     //Revenues
     Route::get('revenues', [RevenueController::class, 'getTotalRevenue']);
+    //Departments
+    Route::get('departments', [DepartmentController::class, 'getDepartments']);
+    Route::post('departments', [DepartmentController::class, 'store']);
+    Route::put('departments/{id}', [DepartmentController::class, 'update']);
+    Route::delete('departments/{id}', [DepartmentController::class, 'destroy']);
+    //Employees
+    Route::get('employees', [EmployeeController::class, 'getAllEmployees']);
+    Route::post('employees', [EmployeeController::class, 'store']);
+    Route::post('employees/{id}', [EmployeeController::class, 'update']);
+    Route::delete('employees/{id}', [EmployeeController::class, 'destroy']);
 
 });

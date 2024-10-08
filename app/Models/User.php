@@ -5,6 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
@@ -50,9 +51,12 @@ class User extends Authenticatable implements JWTSubject
         ];
     }
 
-    public static function register($data): bool
+    public static function register($data)
     {
-        return DB::table('users')->insert([
+        $data = Arr::except($data, ['images', 'birthday', 'department_id', 'hire_date', 'salary', 'position']);
+        $user = DB::table('users')->insertGetId([
+            'first_name' => $data['first_name'],
+            'last_name' => $data['last_name'],
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => bcrypt($data['password']),
@@ -60,6 +64,12 @@ class User extends Authenticatable implements JWTSubject
             'username' => $data['username'],
             'phone_number' => $data['phone_number'],
         ]);
+        return DB::table('users')->where('id', $user)->first();
+    }
+
+    public function employees(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Employee::class);
     }
 
     public function getJWTIdentifier()

@@ -10,6 +10,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 use Kreait\Firebase\Factory;
 
 class ProductController extends Controller
@@ -25,7 +26,7 @@ class ProductController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $dataSearch = request()->all();
+        $dataSearch = $request->all();
         $products = Product::getAllProduct($dataSearch);
         if ($products->isEmpty()) {
             return response()->json('No products found in store');
@@ -100,6 +101,9 @@ class ProductController extends Controller
         return response()->json(['message' => 'Product not created'], 500);
     }
 
+    /**
+     * @throws ValidationException
+     */
     public function update(Request $request, int $id): JsonResponse
     {
         $dataUpdate = $request->all();
