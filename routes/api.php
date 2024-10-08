@@ -54,5 +54,8 @@ Route::middleware('auth:api')->group(function () {
     Route::delete('departments/{id}', [DepartmentController::class, 'destroy']);
     //Employees
     Route::get('employees', [EmployeeController::class, 'getAllEmployees']);
+    Route::post('employees', [EmployeeController::class, 'store']);
+    Route::post('employees/{id}', [EmployeeController::class, 'update']);
+    Route::delete('employees/{id}', [EmployeeController::class, 'destroy']);
 
 });

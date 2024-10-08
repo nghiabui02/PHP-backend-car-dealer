@@ -15,10 +15,12 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('department_id');
-            $table->string('position');
+            $table->string('email');
+            $table->string('phone_number');
+            $table->decimal('salary', 10, 2)->default(0)->nullable()->change();
+            $table->string('position'); // user role
             $table->date('birthday');
             $table->date('hire_date');
-            $table->decimal('salary', 10, 2);
             $table->integer('status')->default(0); //0 đi làm, 1 nghỉ việc
             $table->timestamps();
 

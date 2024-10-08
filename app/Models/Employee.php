@@ -11,20 +11,29 @@ use Illuminate\Support\Facades\DB;
 class Employee extends Model
 {
     use HasFactory;
+    const POSITIONS = [
+      0 => 'admin',
+      1 => 'manager',
+      2 => 'employee',
+    ];
 
     public function user(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    public function department(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function departments(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Department::class);
     }
 
-    public static function getAllEmployees(): \Illuminate\Database\Eloquent\Collection
+    public static function getAllEmployees(): \Illuminate\Support\Collection
     {
-        return Employee::with('departments')->get();
+        return DB::table('employees')
+            ->select('departments.name as department', 'users.name as name', 'employees.*')
+            ->join('departments', 'employees.department_id', '=', 'departments.id')
+            ->join('users', 'employees.user_id', '=', 'users.id')
+            ->get();
     }
 
     public static function getEmployeeById($id)
@@ -35,7 +44,7 @@ class Employee extends Model
     public static function createEmployee($data) {
         try {
             DB::beginTransaction();
-            $employee = Arr::except($data, ['images']);
+            $employee = Arr::except($data, ['images', 'first_name', 'last_name', 'password', 'username', 'name']);
             $employee['created_at'] = now();
             $employee = DB::table('employees')->insertGetId($employee);
 
