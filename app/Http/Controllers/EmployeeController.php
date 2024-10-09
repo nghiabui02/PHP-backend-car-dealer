@@ -24,11 +24,17 @@ class EmployeeController extends Controller
 
         $this->firebaseStorage = $firebase->createStorage();
     }
-    public function getAllEmployees(): JsonResponse
+    public function getAllEmployees(Request $request): JsonResponse
     {
-        $employees = Employee::getAllEmployees();
+        $dataSearch = $request->all();
+        $employees = Employee::getAllEmployees($dataSearch);
         if (count($employees) == 0) {
             return response()->json("no data");
+        }
+        foreach ($employees as $employee) {
+            $employee->position = Employee::POSITIONS[$employee->position] ?? 'Unknown';
+            $employee->status = Employee::WORKING_STATUS[$employee->status] ?? 'Unknown';
+            $employee->age = Carbon::parse($employee->birthday)->age;
         }
         return response()->json($employees);
     }
@@ -36,10 +42,14 @@ class EmployeeController extends Controller
     public function getEmployeeById(int $id): JsonResponse
     {
         $employee = Employee::getEmployeeById($id);
-        if (count($employee) == 0) {
+        if (empty($employee)) {
             return response()->json("Not found");
+        } else {
+            $employee->position = Employee::POSITIONS[$employee->position];
+            $employee->status = Employee::WORKING_STATUS[$employee->status];
+            $employee->age = Carbon::parse($employee->birthday)->age;
+            return response()->json($employee);
         }
-        return response()->json($employee);
     }
 
     /**
