@@ -24,11 +24,17 @@ class EmployeeController extends Controller
 
         $this->firebaseStorage = $firebase->createStorage();
     }
-    public function getAllEmployees(): JsonResponse
+    public function getAllEmployees(Request $request): JsonResponse
     {
-        $employees = Employee::getAllEmployees();
+        $dataSearch = $request->all();
+        $employees = Employee::getAllEmployees($dataSearch);
         if (count($employees) == 0) {
             return response()->json("no data");
+        }
+        foreach ($employees as $employee) {
+            $employee->position = Employee::POSITIONS[$employee->position] ?? 'Unknown';
+            $employee->status = Employee::WORKING_STATUS[$employee->status] ?? 'Unknown';
+            $employee->age = Carbon::parse($employee->birthday)->age;
         }
         return response()->json($employees);
         //adadaddsadadadasd
@@ -37,10 +43,14 @@ class EmployeeController extends Controller
     public function getEmployeeById(int $id): JsonResponse
     {
         $employee = Employee::getEmployeeById($id);
-        if (count($employee) == 0) {
+        if (empty($employee)) {
             return response()->json("Not found");
+        } else {
+            $employee->position = Employee::POSITIONS[$employee->position];
+            $employee->status = Employee::WORKING_STATUS[$employee->status];
+            $employee->age = Carbon::parse($employee->birthday)->age;
+            return response()->json($employee);
         }
-        return response()->json($employee);
     }
 
     /**
@@ -162,21 +172,19 @@ class EmployeeController extends Controller
         return response()->json(['message' => 'Employee deleted'], 204);
     }
 
-    /**
-     * @throws ValidationException
-     */
-    public function changeEmployeeStatus(int $id, Request $request): JsonResponse
+    public function changeEmployeeStatus(int $id): JsonResponse
     {
-        $data = $request->all();
-        $validator = Validator::make($data, [
-            'status' => 'required',
-        ]);
-        if ($validator->fails()) {
-            return response()->json($validator->errors(), 400);
+        $employee = Employee::getEmployeeById($id);
+        if (empty($employee)) {
+            return response()->json("Not found this employee");
         }
-        $dataSend = $validator->validated();
-        $status = $dataSend['status'];
-        $employee = Employee::changeEmployeeStatus($id, $status);
+        if ($employee->status == 0) {
+            $employee->status = 1;
+            $employee->resignation_date = now();
+        } else {
+            $employee->status = 0;
+        }
+        $employee = Employee::changeEmployeeStatus($id, $employee);
         if ($employee) {
             return response()->json(['message' => 'Employee status updated successfully', 'data' => $employee]);
         }
