@@ -35,8 +35,9 @@ class Employee extends Model
     public static function getAllEmployees($dataSearch): \Illuminate\Support\Collection
     {
         $employees = DB::table('employees')
-            ->select('employees.*', 'departments.name as department_name', 'users.name as full_name', 'users.first_name', 'users.last_name')
+            ->select('employees.*', 'departments.name as department_name', 'users.name as full_name', 'users.first_name', 'users.last_name', 'employee_images.path')
             ->join('departments', 'employees.department_id', '=', 'departments.id')
+            ->leftJoin('employee_images', 'employees.id', '=', 'employee_images.employee_id')
             ->join('users', 'employees.user_id', '=', 'users.id');
 
         if (!empty($dataSearch['name'])) {
@@ -55,7 +56,34 @@ class Employee extends Model
             $employees->where('employees.position', $dataSearch['position']);
         }
 
-        return $employees->get();
+        if (!empty($dataSearch['status'])) {
+            $employees->where('employees.status', $dataSearch['status']);
+        }
+
+        if (!empty($dataSearch['birthday'])) {
+            $employees->whereDate('employees.birthday', '=', $dataSearch['birthday']);
+        }
+
+        if (!empty($dataSearch['birthday_year'])) {
+            $employees->whereYear('employees.birthday', '=', $dataSearch['birthday_year']);
+        }
+
+        if (!empty($dataSearch['birthday_month'])) {
+            $employees->whereMonth('employees.birthday', '=', $dataSearch['birthday_month']);
+        }
+
+        if (!empty($dataSearch['hire_date'])) {
+            $employees->whereYear('employees.hire_date', '=', $dataSearch['hire_date']);
+        }
+
+        $employees = $employees->get();
+        $groupedEmployees = $employees->groupBy('id')->map(function ($employeeGroup) {
+            $employees = $employeeGroup->first();
+            $employees->paths = $employeeGroup->pluck('path')->filter()->all();
+            unset($employees->path);
+            return $employees;
+        });
+        return $groupedEmployees->values();
     }
 
     public static function getEmployeeById($id)
@@ -131,12 +159,16 @@ class Employee extends Model
         }
     }
 
-    public static function deleteEmployee($id) {
+    public static function deleteEmployee($id): void
+    {
         DB::table('employees')->where('id', $id)->delete();
     }
 
-    public static function changeEmployeeStatus($id, $status) {
-       DB::table('employees')->where('id', $id)->update(['status' => $status]);
+    public static function changeEmployeeStatus($id, $data) {
+       DB::table('employees')->where('id', $id)->update([
+           'status' => $data->status,
+           'resignation_date' => $data->resignation_date,
+       ]);
        return Employee::with('departments')->find($id);
     }
 }
