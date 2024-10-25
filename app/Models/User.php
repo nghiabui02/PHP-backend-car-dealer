@@ -54,6 +54,9 @@ class User extends Authenticatable implements JWTSubject
     public static function register($data)
     {
         $data = Arr::except($data, ['images', 'birthday', 'department_id', 'hire_date', 'salary', 'position']);
+        if (empty($data['name'])) {
+            $data['name'] = $data['first_name'] . ' ' . $data['last_name'];
+        }
         $user = DB::table('users')->insertGetId([
             'first_name' => $data['first_name'],
             'last_name' => $data['last_name'],
