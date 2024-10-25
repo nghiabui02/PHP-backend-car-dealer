@@ -17,8 +17,8 @@ class AuthController extends Controller
         $data = $request->all();
         \Log::info($data);
         $attributes = Validator::make($data,[
-            'login' => ['required', 'string'],
-            'password' => ['required', 'string'],
+            'login' => 'required', 'string',
+            'password' => 'required', 'string',
         ]);
 
         if ($attributes->fails()) {
@@ -59,11 +59,12 @@ class AuthController extends Controller
         $data = $request->all();
         \Log::info($data);
         $attributes = Validator::make($data, [
-            'email' => ['required', 'email', 'unique:users,email'],
-            'username' => ['required', 'string', 'unique:users,username', 'min:5', 'max:8'],
-            'password' => ['required', 'string', 'max:10', 'min:6', 'confirmed'],
-            'name' => ['required', 'string', 'max:10'],
-            'phone_number' => ['required', 'string'],
+            'email' => 'required', 'email', 'unique:users,email',
+            'username' => 'required', 'string', 'unique:users,username', 'min:5', 'max:8',
+            'password' => 'required', 'string', 'max:10', 'min:6', 'confirmed',
+            'phone_number' => 'required', 'string',
+            'first_name' => 'required', 'string',
+            'last_name' => 'required', 'string',
         ]);
         if ($attributes->fails()) {
             return response()->json($attributes->messages(), 400);
