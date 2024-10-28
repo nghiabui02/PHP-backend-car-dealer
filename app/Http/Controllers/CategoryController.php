@@ -19,7 +19,7 @@ class CategoryController extends Controller
     {
         $data = $request->all();
         $validation = Validator::make($data, [
-            'name' => 'required | unique:categories | max: 15',
+            'name' => 'required|unique:categories|max: 15',
         ]);
         if ($validation->fails()) {
             return response()->json($validation->errors(), 400);
@@ -34,7 +34,7 @@ class CategoryController extends Controller
         $data = $request->all();
 
         $validation = Validator::make($data, [
-            'name' => 'required | string | max:15',
+            'name' => 'required|string|max:15',
             'updated_at' => now()
         ]);
         if ($validation->fails()) {
