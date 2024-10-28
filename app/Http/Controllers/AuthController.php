@@ -12,10 +12,12 @@ use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
 {
+    /**
+     * @throws ValidationException
+     */
     public function login(Request $request): JsonResponse
     {
         $data = $request->all();
-        \Log::info($data);
         $attributes = Validator::make($data,[
             'login' => 'required', 'string',
             'password' => 'required', 'string',
@@ -57,7 +59,6 @@ class AuthController extends Controller
     public function register(Request $request): JsonResponse
     {
         $data = $request->all();
-        \Log::info($data);
         $attributes = Validator::make($data, [
             'email' => 'required', 'email', 'unique:users,email',
             'username' => 'required', 'string', 'unique:users,username', 'min:5', 'max:8',
